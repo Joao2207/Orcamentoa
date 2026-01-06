@@ -1,0 +1,18 @@
+
+{
+  "name": "Gestão de Orçamentos Offline",
+  "short_name": "Orçamentos",
+  "description": "Gestão profissional de produtos e orçamentos 100% offline.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#4f46e5",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1611/1611154.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
