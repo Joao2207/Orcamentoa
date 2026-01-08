@@ -10,7 +10,6 @@ import Products from './pages/Products';
 import Quotes from './pages/Quotes';
 import QuoteEditor from './pages/QuoteEditor';
 import SettingsPage from './pages/Settings';
-import Orders from './pages/Orders';
 import Reports from './pages/Reports';
 
 const App: React.FC = () => {
@@ -24,7 +23,9 @@ const App: React.FC = () => {
     customersCount: 0,
     productsCount: 0,
     quotesCount: 0,
-    approvedCount: 0
+    approvedCount: 0,
+    weeklyRevenue: 0,
+    monthlyRevenue: 0
   });
 
   const loadSettings = async () => {
@@ -37,11 +38,33 @@ const App: React.FC = () => {
   };
 
   const loadStats = async () => {
-    const customersCount = await db.customers.count();
-    const productsCount = await db.products.count();
-    const quotesCount = await db.quotes.count();
-    const approvedCount = await db.quotes.where('status').equals('Aprovado').count();
-    setStats({ customersCount, productsCount, quotesCount, approvedCount });
+    const [customersCount, productsCount, quotesCount, quotes] = await Promise.all([
+      db.customers.count(),
+      db.products.count(),
+      db.quotes.count(),
+      db.quotes.toArray()
+    ]);
+
+    const now = new Date();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(now.getDate() - 7);
+    
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const approvedQuotes = quotes.filter(q => ['Aprovado', 'Produção iniciada', 'Entregue'].includes(q.status));
+    const approvedCount = approvedQuotes.filter(q => q.status === 'Aprovado').length;
+
+    const weeklyRevenue = approvedQuotes.filter(q => new Date(q.date) >= oneWeekAgo).reduce((acc, q) => acc + q.total, 0);
+    const monthlyRevenue = approvedQuotes.filter(q => new Date(q.date) >= startOfMonth).reduce((acc, q) => acc + q.total, 0);
+
+    setStats({ 
+      customersCount, 
+      productsCount, 
+      quotesCount, 
+      approvedCount,
+      weeklyRevenue,
+      monthlyRevenue
+    });
   };
 
   useEffect(() => {
@@ -49,13 +72,18 @@ const App: React.FC = () => {
     loadStats();
   }, []);
 
+  // Recarrega estatísticas sempre que a aba muda
+  useEffect(() => {
+    if (isAuthenticated) loadStats();
+  }, [activeTab, isAuthenticated]);
+
   const handleLogin = async (password: string, initialData?: Partial<CompanySettings>) => {
     if (isInitialSetup && initialData) {
       const initialSettings: CompanySettings = {
         companyName: initialData.companyName || 'Meu Negócio',
         ownerName: initialData.ownerName || 'Proprietária',
         phone: initialData.phone || '',
-        defaultObservations: initialData.defaultObservations || 'Orçamento válido por 7 dias.',
+        defaultObservations: initialData.defaultObservations || 'Orçamento válido por 15 dias.',
         productMode: initialData.productMode || ProductMode.SIMPLE,
         pdfTheme: PDFTheme.SIMPLE,
         password: password
@@ -100,6 +128,7 @@ const App: React.FC = () => {
               setCurrentQuote(null);
               setActiveTab('quote-editor');
             }}
+            onStatusChanged={loadStats} // Callback para atualização instantânea
           />
         );
       case 'quote-editor':
@@ -113,8 +142,6 @@ const App: React.FC = () => {
             }} 
           />
         );
-      case 'orders':
-        return <Orders />;
       case 'reports':
         return <Reports />;
       case 'settings':

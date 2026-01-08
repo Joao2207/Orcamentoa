@@ -9,13 +9,13 @@ import {
   LogOut,
   Menu,
   X,
-  ShoppingBag,
   BarChart3,
-  Heart
+  Heart,
+  ChevronRight
 } from 'lucide-react';
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: React.FC | React.ReactNode;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onLogout: () => void;
@@ -23,100 +23,101 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, onLogout, companyName }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'customers', label: 'Clientes', icon: Users },
-    { id: 'products', label: 'Produtos', icon: Package },
+    { id: 'dashboard', label: 'Painel Central', icon: LayoutDashboard },
+    { id: 'customers', label: 'Portfólio Clientes', icon: Users },
+    { id: 'products', label: 'Catálogo Elite', icon: Package },
     { id: 'quotes', label: 'Orçamentos', icon: FileText },
-    { id: 'orders', label: 'Pedidos', icon: ShoppingBag },
-    { id: 'reports', label: 'Relatórios', icon: BarChart3 },
-    { id: 'settings', label: 'Configurações', icon: Settings },
+    { id: 'reports', label: 'Finanças & Estatísticas', icon: BarChart3 },
+    { id: 'settings', label: 'Preferências', icon: Settings },
   ];
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
-    // Fecha a sidebar no mobile após selecionar
-    if (window.innerWidth < 1024) {
-      setIsSidebarOpen(false);
-    }
+    setIsSidebarOpen(false);
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-indigo-950/40 backdrop-blur-sm z-40 lg:hidden transition-all" onClick={() => setIsSidebarOpen(false)} />
       )}
 
       {/* Sidebar Navigation */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-indigo-950 text-white flex flex-col shadow-2xl transition-all duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:w-0 lg:opacity-0'} lg:relative lg:translate-x-0`}>
-        <div className="p-6 flex items-center justify-between min-w-[256px]">
-          <div className="flex flex-col">
-            <h1 className="text-xl font-black tracking-tight truncate w-40 text-indigo-50">{companyName || 'Meu Negócio'}</h1>
-            <div className="flex items-center gap-1.5 mt-1">
-              <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Sistema Ativo</span>
-            </div>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-indigo-950 text-white flex flex-col shadow-[10px_0_40px_rgba(0,0,0,0.1)] transition-all duration-500 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:relative lg:translate-x-0`}>
+        <div className="p-8 flex flex-col mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-2xl font-black tracking-tighter truncate w-48 text-white">{companyName || 'Gestão'}</h1>
+            <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-white/50 hover:bg-white/10 p-2 rounded-xl transition-all"><X className="h-6 w-6" /></button>
           </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden text-white hover:bg-white/10 p-1 rounded-lg"><X className="h-6 w-6" /></button>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full shadow-[0_0_10px_#3b82f6]" />
+            <span className="text-blue-400 text-[9px] font-black uppercase tracking-[0.2em]">Premium Workspace</span>
+          </div>
         </div>
         
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto min-w-[256px]">
+        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`flex items-center w-full px-4 py-3.5 text-sm font-bold rounded-2xl transition-all duration-200 group ${activeTab === item.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/40 translate-x-1' : 'text-indigo-300 hover:bg-white/5 hover:text-white'}`}
+              className={`group flex items-center justify-between w-full px-5 py-4 text-xs font-black rounded-2xl transition-all duration-300 uppercase tracking-widest ${activeTab === item.id ? 'bg-blue-600 text-white shadow-[0_10px_20px_rgba(59,130,246,0.3)]' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
             >
-              <item.icon className={`mr-3 h-5 w-5 transition-transform group-hover:scale-110 ${activeTab === item.id ? 'text-white' : 'text-indigo-400'}`} />
-              {item.label}
+              <div className="flex items-center">
+                <item.icon className={`mr-4 h-5 w-5 transition-transform ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
+                {item.label}
+              </div>
+              {activeTab === item.id && <ChevronRight className="h-4 w-4 opacity-50" />}
             </button>
           ))}
         </nav>
 
-        {/* Footer info fixo */}
-        <div className="p-4 border-t border-white/10 min-w-[256px] bg-indigo-950/50 backdrop-blur-sm">
-          <div className="mb-4 px-4 py-2 bg-indigo-900/40 rounded-xl flex items-center justify-center gap-2 border border-white/5">
-            <Heart className="h-3 w-3 text-red-400 fill-red-400" />
-            <span className="text-[9px] font-black text-indigo-200 uppercase tracking-tight">Feito para Emanuele</span>
+        {/* Footer info com Assinaturas */}
+        <div className="p-6 border-t border-white/5 bg-indigo-950/30">
+          <div className="mb-6 px-4 py-4 bg-white/5 rounded-3xl border border-white/5 text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Heart className="h-3 w-3 text-red-500 fill-red-500" />
+              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Para Emanuelle</span>
+            </div>
+            <p className="text-[8px] font-bold text-blue-400 uppercase tracking-tighter opacity-50">BY JOÃO FERRARI</p>
           </div>
-          <button onClick={onLogout} className="flex items-center w-full px-4 py-3.5 text-sm font-black text-indigo-400 rounded-2xl hover:bg-red-950/40 hover:text-red-300 transition-all border border-transparent hover:border-red-900/30">
-            <LogOut className="mr-3 h-5 w-5" /> Sair
+          <button onClick={onLogout} className="flex items-center justify-center w-full px-4 py-4 text-[10px] font-black text-red-400/70 rounded-2xl hover:bg-red-500/10 hover:text-red-400 transition-all uppercase tracking-widest">
+            <LogOut className="mr-3 h-4 w-4" /> Encerrar Sessão
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="bg-white/80 backdrop-blur-md border-b h-16 flex items-center px-6 justify-between shrink-0 sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 lg:hidden transition-colors">
+        <header className="bg-white/80 backdrop-blur-md border-b h-20 flex items-center px-8 justify-between shrink-0 sticky top-0 z-30">
+          <div className="flex items-center gap-6">
+            <button onClick={() => setIsSidebarOpen(true)} className="p-3 rounded-2xl text-slate-400 hover:bg-slate-100 lg:hidden transition-all shadow-sm border border-slate-100">
               <Menu className="h-6 w-6" />
             </button>
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-indigo-600 rounded-full" />
-              <span className="text-sm font-black text-gray-900 uppercase tracking-widest">
+            <div className="flex items-center gap-4">
+              <div className="w-1.5 h-8 bg-blue-600 rounded-full" />
+              <h2 className="text-sm font-black text-indigo-950 uppercase tracking-[0.2em]">
                 {menuItems.find(i => i.id === activeTab)?.label}
-              </span>
+              </h2>
             </div>
           </div>
-          
-          <div className="flex items-center gap-3">
-             <div className="hidden md:flex flex-col items-end mr-2">
-                <span className="text-[10px] font-black text-gray-400 uppercase leading-none">Status</span>
-                <span className="text-[11px] font-bold text-green-600 uppercase">Offline Ready</span>
+          <div className="flex items-center gap-4">
+             <div className="text-right hidden sm:block">
+                <p className="text-[10px] font-black text-indigo-950 leading-none">OPERADOR ELITE</p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Emanuelle</p>
              </div>
-             <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-black text-sm border border-indigo-100">
-                {companyName ? companyName.charAt(0).toUpperCase() : 'M'}
+             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg border-2 border-white">
+                {companyName ? companyName.charAt(0).toUpperCase() : 'A'}
              </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50/50">
-          <div className="max-w-6xl mx-auto animate-in fade-in duration-500">
-            {children}
+        <main className="flex-1 overflow-y-auto p-8 bg-slate-50">
+          <div className="max-w-6xl mx-auto">
+            {children as any}
           </div>
         </main>
       </div>

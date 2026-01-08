@@ -2,18 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../db/database';
 import { Customer, Quote } from '../types';
-import { Search, Plus, Edit2, Trash2, History, AlertTriangle, MapPin, Map } from 'lucide-react';
-import { format } from 'date-fns';
+import { Search, Plus, Edit2, Trash2, MapPin, Map, AlertTriangle } from 'lucide-react';
 
 const Customers: React.FC = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
-  const [selectedHistory, setSelectedHistory] = useState<{customer: Customer, quotes: Quote[]} | null>(null);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    phone: string;
+    email: string;
+    observations: string;
+    address: {
+      street: string;
+      number: string;
+      neighborhood: string;
+      city: string;
+      state: string;
+      zipCode?: string;
+    }
+  }>({
     name: '',
     phone: '',
     email: '',
@@ -95,121 +106,130 @@ const Customers: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 uppercase tracking-tight">Clientes</h2>
-          <p className="text-gray-500">Gerencie contatos e endereços de entrega.</p>
+          <h2 className="text-3xl font-black text-indigo-950 tracking-tighter uppercase leading-none mb-2">Clientes</h2>
+          <p className="text-slate-500 font-bold text-xs uppercase tracking-widest opacity-70">Gerencie sua rede de contatos exclusiva.</p>
         </div>
         <button 
           onClick={() => {
             resetForm();
             setIsModalOpen(true);
           }}
-          className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+          className="bg-indigo-950 text-white px-8 py-4 rounded-2xl font-black flex items-center justify-center hover:bg-blue-600 transition-all shadow-xl active:scale-95 text-xs tracking-widest"
         >
           <Plus className="mr-2 h-5 w-5" />
-          Novo Cliente
+          NOVO CLIENTE
         </button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+      <div className="relative group">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-400 group-focus-within:text-blue-600 transition-colors" />
         <input
           type="text"
           placeholder="Buscar pelo nome ou telefone..."
-          className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+          className="w-full pl-12 pr-6 py-4 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 outline-none transition-all font-bold placeholder:text-slate-300 shadow-sm"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCustomers.map((customer) => (
-          <div key={customer.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-200 transition-all">
-            <div className="flex justify-between items-start mb-4">
-              <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xl uppercase">
-                {customer.name.charAt(0)}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {filteredCustomers.map((customer, index) => (
+          <div 
+            key={customer.id} 
+            className="animate-card-entry bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 hover:border-blue-100 hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 group flex flex-col"
+            style={{ animationDelay: `${index * 0.05}s` }}
+          >
+            <div className="flex justify-between items-start mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center text-white font-black text-2xl shadow-lg transform group-hover:rotate-6 transition-transform">
+                {customer.name.charAt(0).toUpperCase()}
               </div>
-              <div className="flex space-x-1">
+              <div className="flex gap-1">
                 {customer.address?.street && (
-                  <button onClick={() => openMap(customer.address)} className="p-2 text-green-600 hover:bg-green-50 rounded-lg" title="Ver no Mapa">
-                    <Map className="h-4 w-4" />
+                  <button onClick={() => openMap(customer.address)} className="p-3 text-emerald-600 hover:bg-emerald-50 rounded-2xl transition-all" title="Ver no Mapa">
+                    <Map className="h-5 w-5" />
                   </button>
                 )}
-                <button onClick={() => handleEdit(customer)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg"><Edit2 className="h-4 w-4" /></button>
-                <button onClick={() => confirmDelete(customer)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="h-4 w-4" /></button>
+                <button onClick={() => handleEdit(customer)} className="p-3 text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"><Edit2 className="h-5 w-5" /></button>
+                <button onClick={() => confirmDelete(customer)} className="p-3 text-red-400 hover:bg-red-50 rounded-2xl transition-all"><Trash2 className="h-5 w-5" /></button>
               </div>
             </div>
-            <h3 className="font-bold text-lg text-gray-900 truncate">{customer.name}</h3>
-            <p className="text-gray-500 text-sm">{customer.phone}</p>
+            
+            <h3 className="font-black text-xl text-indigo-950 truncate mb-1">{customer.name}</h3>
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-6">{customer.phone}</p>
+            
             {customer.address?.street && (
-              <div className="mt-3 flex items-start text-xs text-gray-400">
-                <MapPin className="h-3 w-3 mr-1 mt-0.5 shrink-0" />
-                <span className="truncate">{customer.address.street}, {customer.address.number} - {customer.address.city}</span>
+              <div className="mt-auto pt-6 border-t border-slate-50 flex items-start text-xs text-slate-400">
+                <MapPin className="h-4 w-4 mr-2 text-blue-500 shrink-0" />
+                <span className="truncate leading-relaxed">{customer.address.street}, {customer.address.number}<br/>{customer.address.city}</span>
               </div>
             )}
           </div>
         ))}
+        {filteredCustomers.length === 0 && (
+          <div className="col-span-full py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-slate-100">
+             <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-50 rounded-full mb-6">
+                <Search className="h-10 w-10 text-slate-200" />
+             </div>
+             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Nenhum cliente encontrado.</p>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="bg-indigo-600 p-6 text-white shrink-0">
-              <h3 className="text-xl font-black uppercase">{editingCustomer ? 'Editar Cliente' : 'Novo Cliente'}</h3>
+        <div className="fixed inset-0 bg-indigo-950/40 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-[50px] shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+            <div className="bg-indigo-950 p-10 text-white flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-black uppercase tracking-tighter">{editingCustomer ? 'Refinar Perfil' : 'Novo Cliente Elite'}</h3>
+                <p className="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Cadastro de Portfólio</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition-all text-white"><Plus className="h-6 w-6 rotate-45" /></button>
             </div>
-            <form onSubmit={handleSave} className="p-8 space-y-6 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="p-10 space-y-8 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-black text-gray-400 uppercase mb-1">Nome Completo *</label>
-                  <input required className="w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 font-bold" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                  <label className="block text-[10px] font-black text-indigo-950/40 uppercase tracking-widest mb-2 ml-1">Nome Completo Premium</label>
+                  <input required className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-100 font-bold text-indigo-950" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase mb-1">Telefone *</label>
-                  <input required className="w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                  <label className="block text-[10px] font-black text-indigo-950/40 uppercase tracking-widest mb-2 ml-1">Telefone / WhatsApp</label>
+                  <input required className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-100 font-bold text-indigo-950" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-gray-400 uppercase mb-1">E-mail</label>
-                  <input type="email" className="w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                  <label className="block text-[10px] font-black text-indigo-950/40 uppercase tracking-widest mb-2 ml-1">E-mail Corporativo</label>
+                  <input type="email" className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-100 font-bold text-indigo-950" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                 </div>
               </div>
 
-              <div className="border-t pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-sm font-black text-gray-700 uppercase flex items-center">
-                    <MapPin className="mr-2 h-4 w-4 text-indigo-600" /> Endereço de Entrega
+              <div className="pt-8 border-t border-slate-100">
+                <div className="flex items-center justify-between mb-6">
+                  <h4 className="text-sm font-black text-indigo-950 uppercase tracking-widest flex items-center">
+                    <MapPin className="mr-3 h-5 w-5 text-blue-600" /> Endereço de Entrega
                   </h4>
-                  {formData.address.street && (
-                    <button 
-                      type="button" 
-                      onClick={() => openMap(formData.address)}
-                      className="text-[10px] font-black uppercase text-green-600 flex items-center hover:underline"
-                    >
-                      <Map className="h-3 w-3 mr-1" /> Ver no mapa
-                    </button>
-                  )}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                   <div className="md:col-span-9">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Rua / Logradouro</label>
-                    <input className="w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none" value={formData.address.street} onChange={e => setFormData({...formData, address: {...formData.address, street: e.target.value}})} />
+                    <label className="block text-[10px] font-black text-indigo-950/40 uppercase tracking-widest mb-2 ml-1">Rua / Logradouro</label>
+                    <input className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-100 font-bold text-indigo-950" value={formData.address.street} onChange={e => setFormData({...formData, address: {...formData.address, street: e.target.value}})} />
                   </div>
                   <div className="md:col-span-3">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Nº</label>
-                    <input className="w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none" value={formData.address.number} onChange={e => setFormData({...formData, address: {...formData.address, number: e.target.value}})} />
+                    <label className="block text-[10px] font-black text-indigo-950/40 uppercase tracking-widest mb-2 ml-1">Nº</label>
+                    <input className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-100 font-bold text-indigo-950" value={formData.address.number} onChange={e => setFormData({...formData, address: {...formData.address, number: e.target.value}})} />
                   </div>
                   <div className="md:col-span-6">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Bairro</label>
-                    <input className="w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none" value={formData.address.neighborhood} onChange={e => setFormData({...formData, address: {...formData.address, neighborhood: e.target.value}})} />
+                    <label className="block text-[10px] font-black text-indigo-950/40 uppercase tracking-widest mb-2 ml-1">Bairro</label>
+                    <input className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-100 font-bold text-indigo-950" value={formData.address.neighborhood} onChange={e => setFormData({...formData, address: {...formData.address, neighborhood: e.target.value}})} />
                   </div>
                   <div className="md:col-span-6">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Cidade</label>
-                    <input className="w-full px-4 py-3 bg-gray-50 border rounded-2xl outline-none" value={formData.address.city} onChange={e => setFormData({...formData, address: {...formData.address, city: e.target.value}})} />
+                    <label className="block text-[10px] font-black text-indigo-950/40 uppercase tracking-widest mb-2 ml-1">Cidade</label>
+                    <input className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl outline-none focus:ring-4 focus:ring-blue-100 font-bold text-indigo-950" value={formData.address.city} onChange={e => setFormData({...formData, address: {...formData.address, city: e.target.value}})} />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-gray-500 font-black uppercase text-xs">Cancelar</button>
-                <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black uppercase text-xs shadow-lg">Salvar Cliente</button>
+              <div className="flex justify-end gap-4 pt-6">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-indigo-950 transition-colors">Cancelar</button>
+                <button type="submit" className="bg-indigo-950 text-white px-10 py-4 rounded-[20px] font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-blue-600 transition-all active:scale-95">Salvar Cadastro</button>
               </div>
             </form>
           </div>
@@ -217,14 +237,16 @@ const Customers: React.FC = () => {
       )}
 
       {customerToDelete && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm text-center">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><AlertTriangle className="h-8 w-8" /></div>
-            <h3 className="text-xl font-black mb-2">Excluir Cliente?</h3>
-            <p className="text-gray-500 text-sm mb-6">Esta ação é permanente.</p>
-            <div className="flex gap-2">
-              <button onClick={() => setCustomerToDelete(null)} className="flex-1 py-3 bg-gray-100 rounded-xl font-bold">Voltar</button>
-              <button onClick={executeDelete} className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold">Excluir</button>
+        <div className="fixed inset-0 bg-indigo-950/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[40px] p-10 max-w-sm text-center shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-red-100">
+               <AlertTriangle className="h-10 w-10" />
+            </div>
+            <h3 className="text-2xl font-black text-indigo-950 tracking-tighter mb-2 leading-none">Excluir Perfil?</h3>
+            <p className="text-slate-400 font-medium text-sm mb-8 leading-relaxed">Esta ação é permanente e removerá o cliente de sua rede.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setCustomerToDelete(null)} className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-100 transition-all">Voltar</button>
+              <button onClick={executeDelete} className="flex-1 py-4 bg-red-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-100 hover:bg-red-600 transition-all">Excluir</button>
             </div>
           </div>
         </div>

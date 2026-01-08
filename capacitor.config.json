@@ -1,0 +1,10 @@
+
+{
+  "appId": "com.joaoferrari.gestaoorcamentos",
+  "appName": "Gestão de Orçamentos",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

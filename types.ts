@@ -85,6 +85,7 @@ export interface Quote {
   customerName: string;
   date: string;
   validity: string;
+  deliveryDate?: string; // Campo para encomendas no calendário
   items: QuoteItem[];
   discount: number;
   shippingFee: number;
@@ -93,6 +94,12 @@ export interface Quote {
   observations: string;
   status: QuoteStatus;
   attachments?: string[];
+}
+
+export interface CalendarNote {
+  id?: number;
+  date: string; // ISO YYYY-MM-DD
+  text: string;
 }
 
 export interface Order {

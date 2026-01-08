@@ -1,10 +1,16 @@
 {
-  "name": "Gestão de Orçamentos Offline",
-  "description": "Aplicativo PWA 100% offline para gestão de produtos, clientes e criação de orçamentos profissionais com geração de PDF.",
+  "name": "Gestão de Orçamentos",
+  "description": "Aplicativo nativo offline para gestão de produtos e orçamentos.",
   "requestFramePermissions": [
     "camera",
+    "microphone",
     "geolocation"
   ],
-  "short_name": "Orçamentos",
-  "theme_color": "#4f46e5"
+  "android": {
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ]
+  }
 }
